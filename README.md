@@ -81,7 +81,7 @@ fn main() -> vncrs::Result<()> {
 Then connect with any VNC viewer:
 
 ```bash
-vncviewer 127.0.0.1:5900
+wlvncc 127.0.0.1 5900
 ```
 
 ## 🎮 Examples
