@@ -24,7 +24,8 @@ impl VncServerConfig {
     }
 
     pub fn password(mut self, password: &str) -> Self {
-        self.password = Some(password[..password.len().min(8)].to_string());
+        let truncated: String = password.chars().take(8).collect();
+        self.password = Some(truncated);
         self
     }
 

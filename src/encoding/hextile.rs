@@ -62,6 +62,7 @@ impl Encoder for HextileEncoder {
         swap_rb: bool,
     ) -> Result<Vec<u8>> {
         let mut data = Vec::new();
+        let mut current_bg: Option<[u8; 4]> = None;
 
         let rx = x as usize;
         let ry = y as usize;
@@ -79,8 +80,13 @@ impl Encoder for HextileEncoder {
                     if swap_rb {
                         color.swap(0, 2);
                     }
-                    data.push(BACKGROUND_SPECIFIED);
-                    data.extend_from_slice(&color);
+                    if Some(color) == current_bg {
+                        data.push(0);
+                    } else {
+                        data.push(BACKGROUND_SPECIFIED);
+                        data.extend_from_slice(&color);
+                        current_bg = Some(color);
+                    }
                 } else {
                     data.push(RAW);
 

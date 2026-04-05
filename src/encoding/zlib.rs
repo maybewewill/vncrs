@@ -1,17 +1,15 @@
 use super::Encoder;
 use crate::error::Result;
-use flate2::write::ZlibEncoder;
-use flate2::Compression;
-use std::io::Write;
+use flate2::{Compress, Compression, FlushCompress};
 
 pub struct ZlibCompressor {
-    compression: Compression,
+    compress: Compress,
 }
 
 impl ZlibCompressor {
     pub fn new() -> Self {
         Self {
-            compression: Compression::fast(),
+            compress: Compress::new(Compression::fast(), true),
         }
     }
 }
@@ -46,9 +44,13 @@ impl Encoder for ZlibCompressor {
             }
         }
 
-        let mut encoder = ZlibEncoder::new(Vec::new(), self.compression);
-        encoder.write_all(&raw)?;
-        let compressed = encoder.finish()?;
+        let before = self.compress.total_out();
+        let mut compressed = Vec::with_capacity(raw.len());
+        self.compress
+            .compress_vec(&raw, &mut compressed, FlushCompress::Sync)
+            .map_err(|e| crate::error::VncError::Encoding(e.to_string()))?;
+        let compressed_len = (self.compress.total_out() - before) as usize;
+        compressed.truncate(compressed_len);
 
         let mut result = Vec::with_capacity(4 + compressed.len());
         result.extend_from_slice(&(compressed.len() as u32).to_be_bytes());

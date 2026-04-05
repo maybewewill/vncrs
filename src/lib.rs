@@ -5,9 +5,9 @@
 //! ## Quick Start
 //!
 //! ```no_run
-//! use vnc_server::{VncServer, VncServerConfig};
-//! use vnc_server::capture::scrap::ScrapCapture;
-//! use vnc_server::input::enigo_input::EnigoInput;
+//! use vncrs::{VncServer, VncServerConfig};
+//! use vncrs::capture::scrap::ScrapCapture;
+//! use vncrs::input::enigo_input::EnigoInput;
 //!
 //! let config = VncServerConfig::new()
 //!     .port(5900)
