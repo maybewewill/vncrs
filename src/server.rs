@@ -315,7 +315,11 @@ impl<C: ScreenCapture, I: InputHandler> VncServer<C, I> {
                             }
                         }
                         ClientMessage::PointerEvent { buttons, x, y } => {
-                            self.input.move_mouse(x, y);
+                            let native_x =
+                                (x as u32 * self.capture.width() as u32 / eff_w as u32) as u16;
+                            let native_y =
+                                (y as u32 * self.capture.height() as u32 / eff_h as u32) as u16;
+                            self.input.move_mouse(native_x, native_y);
 
                             for dir in mouse.scroll_events(buttons) {
                                 self.input.scroll(dir);

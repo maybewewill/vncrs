@@ -1,6 +1,6 @@
 [package]
 name = "vncrs"
-version = "0.1.5"
+version = "0.1.6"
 edition = "2021"
 description = "A pure Rust VNC server library for Windows"
 license = "MIT"
