@@ -13,6 +13,30 @@ use std::sync::{mpsc, Arc};
 use std::thread;
 use std::time::{Duration, Instant};
 
+fn scale_frame(
+    src: &[u8],
+    src_stride: usize,
+    src_w: usize,
+    src_h: usize,
+    dst_w: usize,
+    dst_h: usize,
+) -> (Vec<u8>, usize) {
+    let dst_stride = dst_w * 4;
+    let mut dst = vec![0u8; dst_stride * dst_h];
+    for dy in 0..dst_h {
+        let sy = (dy * src_h / dst_h).min(src_h.saturating_sub(1));
+        for dx in 0..dst_w {
+            let sx = (dx * src_w / dst_w).min(src_w.saturating_sub(1));
+            let src_off = sy * src_stride + sx * 4;
+            let dst_off = dy * dst_stride + dx * 4;
+            if src_off + 4 <= src.len() {
+                dst[dst_off..dst_off + 4].copy_from_slice(&src[src_off..src_off + 4]);
+            }
+        }
+    }
+    (dst, dst_stride)
+}
+
 enum ReaderEvent {
     Message(ClientMessage),
     Disconnected,
@@ -211,11 +235,14 @@ impl<C: ScreenCapture, I: InputHandler> VncServer<C, I> {
 
         let pf = PixelFormat::bgra32();
 
+        let eff_w = self.config.width.unwrap_or(self.capture.width());
+        let eff_h = self.config.height.unwrap_or(self.capture.height());
+
         perform_handshake(
             &mut reader,
             &mut writer,
-            self.capture.width(),
-            self.capture.height(),
+            eff_w,
+            eff_h,
             &self.config.name,
             &pf,
             self.config.password.as_deref(),
@@ -226,10 +253,16 @@ impl<C: ScreenCapture, I: InputHandler> VncServer<C, I> {
 
         reader_stream.set_read_timeout(None)?;
 
-        self.client_loop(reader_stream, &mut writer)
+        self.client_loop(reader_stream, &mut writer, eff_w, eff_h)
     }
 
-    fn client_loop<W: Write>(&mut self, reader_stream: TcpStream, writer: &mut W) -> Result<()> {
+    fn client_loop<W: Write>(
+        &mut self,
+        reader_stream: TcpStream,
+        writer: &mut W,
+        eff_w: u16,
+        eff_h: u16,
+    ) -> Result<()> {
         let (tx, rx) = mpsc::channel::<ReaderEvent>();
         let running = self.running.clone();
 
@@ -308,7 +341,7 @@ impl<C: ScreenCapture, I: InputHandler> VncServer<C, I> {
                 continue;
             }
 
-            let frame = match self.capture.capture_frame() {
+            let raw_frame = match self.capture.capture_frame() {
                 Ok(Some(f)) => f,
                 Ok(None) => {
                     if client_fb.needs_full_update {
@@ -334,9 +367,25 @@ impl<C: ScreenCapture, I: InputHandler> VncServer<C, I> {
                 }
             };
 
-            let stride = self.capture.stride();
-            let w = self.capture.width();
-            let h = self.capture.height();
+            let src_w = self.capture.width() as usize;
+            let src_h = self.capture.height() as usize;
+            let src_stride = self.capture.stride();
+
+            let (frame, stride) = if eff_w as usize != src_w || eff_h as usize != src_h {
+                scale_frame(
+                    &raw_frame,
+                    src_stride,
+                    src_w,
+                    src_h,
+                    eff_w as usize,
+                    eff_h as usize,
+                )
+            } else {
+                (raw_frame, src_stride)
+            };
+
+            let w = eff_w;
+            let h = eff_h;
 
             let dirty = client_fb.find_dirty(&frame, stride, w, h, tile_size);
             let dirty_count = dirty.len();

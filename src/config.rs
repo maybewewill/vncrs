@@ -5,6 +5,8 @@ pub struct VncServerConfig {
     pub name: String,
     pub max_fps: u32,
     pub tile_size: usize,
+    pub width: Option<u16>,
+    pub height: Option<u16>,
 }
 
 impl VncServerConfig {
@@ -15,6 +17,8 @@ impl VncServerConfig {
             name: "Rust VNC".to_string(),
             max_fps: 60,
             tile_size: 64,
+            width: None,
+            height: None,
         }
     }
 
@@ -41,6 +45,18 @@ impl VncServerConfig {
 
     pub fn tile_size(mut self, size: usize) -> Self {
         self.tile_size = size.max(16).min(256);
+        self
+    }
+
+
+    pub fn width(mut self, w: u16) -> Self {
+        self.width = Some(w);
+        self
+    }
+
+
+    pub fn height(mut self, h: u16) -> Self {
+        self.height = Some(h);
         self
     }
 
