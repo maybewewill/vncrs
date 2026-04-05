@@ -43,7 +43,7 @@ Or add it manually to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-vncrs = "0.1"
+vncrs = "0.1.1"
 ```
 
 ### From source
