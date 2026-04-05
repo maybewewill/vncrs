@@ -1,10 +1,10 @@
 [package]
 name = "vncrs"
-version = "0.1.4"
+version = "0.1.5"
 edition = "2021"
 description = "A pure Rust VNC server library for Windows"
 license = "MIT"
-repository = "https://github.com/yourusername/vncrs"
+repository = "https://github.com/maybewewill/vncrs"
 keywords = ["vnc", "rfb", "screen-sharing", "remote-desktop", "server"]
 categories = ["network-programming", "os::windows-apis"]
 
