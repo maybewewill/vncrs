@@ -1,10 +1,10 @@
 use std::sync::atomic::Ordering;
-use vnc_server::capture::scrap::ScrapCapture;
-use vnc_server::capture::ScreenCapture;
-use vnc_server::input::enigo_input::EnigoInput;
-use vnc_server::input::InputHandler;
-use vnc_server::input::NoopInput;
-use vnc_server::{VncServer, VncServerConfig};
+use vncrs::capture::scrap::ScrapCapture;
+use vncrs::capture::ScreenCapture;
+use vncrs::input::enigo_input::EnigoInput;
+use vncrs::input::InputHandler;
+use vncrs::input::NoopInput;
+use vncrs::{VncServer, VncServerConfig};
 
 fn local_ip() -> Option<String> {
     let socket = std::net::UdpSocket::bind("0.0.0.0:0").ok()?;
@@ -12,7 +12,7 @@ fn local_ip() -> Option<String> {
     Some(socket.local_addr().ok()?.ip().to_string())
 }
 
-fn main() -> vnc_server::Result<()> {
+fn main() -> vncrs::Result<()> {
     let args: Vec<String> = std::env::args().collect();
     let mut port: u16 = 5900;
     let mut password: Option<String> = None;
@@ -110,7 +110,7 @@ fn start<C: ScreenCapture, I: InputHandler>(
     capture: C,
     input: I,
     config: VncServerConfig,
-) -> vnc_server::Result<()> {
+) -> vncrs::Result<()> {
     let mut server = VncServer::new(capture, input, config);
     let running = server.running_flag();
     ctrlc::set_handler(move || {

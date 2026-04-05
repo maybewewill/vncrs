@@ -1,9 +1,9 @@
 use std::sync::atomic::Ordering;
-use vnc_server::capture::scrap::ScrapCapture;
-use vnc_server::input::NoopInput;
-use vnc_server::{VncServer, VncServerConfig};
+use vncrs::capture::scrap::ScrapCapture;
+use vncrs::input::NoopInput;
+use vncrs::{VncServer, VncServerConfig};
 
-fn main() -> vnc_server::Result<()> {
+fn main() -> vncrs::Result<()> {
     let config = VncServerConfig::new()
         .port(5900)
         .password("viewonly")

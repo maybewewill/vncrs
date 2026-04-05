@@ -13,8 +13,7 @@ name = "vncrs"
 path = "src/lib.rs"
 
 [dependencies]
-scrap = "0.5"
-enigo = "0.2"
+enigo = "0.6.1"
 flate2 = "1.0"
 thiserror = "2"
 log = "0.4"
@@ -22,6 +21,7 @@ env_logger = "0.11"
 des = "0.8"
 cipher = "0.4"
 rand = "0.8"
+scrap = "0.5.0"
 
 [dev-dependencies]
 ctrlc = "3.4"
