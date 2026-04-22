@@ -39,21 +39,19 @@ impl VncServerConfig {
     }
 
     pub fn max_fps(mut self, fps: u32) -> Self {
-        self.max_fps = fps.max(1).min(120);
+        self.max_fps = fps.clamp(1, 240);
         self
     }
 
     pub fn tile_size(mut self, size: usize) -> Self {
-        self.tile_size = size.max(16).min(256);
+        self.tile_size = size.clamp(16, 256);
         self
     }
-
 
     pub fn width(mut self, w: u16) -> Self {
         self.width = Some(w);
         self
     }
-
 
     pub fn height(mut self, h: u16) -> Self {
         self.height = Some(h);

@@ -1,5 +1,5 @@
 use std::sync::atomic::Ordering;
-use vncrs::capture::scrap::ScrapCapture;
+use vncrs::capture::windows::WindowsCapture;
 use vncrs::capture::ScreenCapture;
 use vncrs::input::enigo_input::EnigoInput;
 use vncrs::input::InputHandler;
@@ -72,7 +72,7 @@ fn main() -> vncrs::Result<()> {
         config = config.password(p);
     }
 
-    let capture = ScrapCapture::new()?;
+    let capture = WindowsCapture::new()?;
     let w = capture.width();
     let h = capture.height();
     let ip = local_ip().unwrap_or_else(|| "localhost".into());

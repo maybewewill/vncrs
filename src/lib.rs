@@ -6,7 +6,7 @@
 //!
 //! ```no_run
 //! use vncrs::{VncServer, VncServerConfig};
-//! use vncrs::capture::scrap::ScrapCapture;
+//! use vncrs::capture::windows::WindowsCapture;
 //! use vncrs::input::enigo_input::EnigoInput;
 //!
 //! let config = VncServerConfig::new()
@@ -14,7 +14,7 @@
 //!     .password("secret")
 //!     .name("My Desktop");
 //!
-//! let capture = ScrapCapture::new().unwrap();
+//! let capture = WindowsCapture::new().unwrap();
 //! let input = EnigoInput::new();
 //!
 //! let mut server = VncServer::new(capture, input, config);

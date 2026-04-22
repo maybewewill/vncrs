@@ -1,5 +1,5 @@
 use std::sync::atomic::Ordering;
-use vncrs::capture::scrap::ScrapCapture;
+use vncrs::capture::windows::WindowsCapture;
 use vncrs::input::enigo_input::EnigoInput;
 use vncrs::{VncServer, VncServerConfig};
 
@@ -7,9 +7,9 @@ fn main() -> vncrs::Result<()> {
     let config = VncServerConfig::new()
         .port(5900)
         .password("secret")
-        .max_fps(30);
+        .max_fps(60);
 
-    let capture = ScrapCapture::new()?;
+    let capture = WindowsCapture::new()?;
     let input = EnigoInput::new();
     let mut server = VncServer::new(capture, input, config);
 

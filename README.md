@@ -14,12 +14,12 @@ A pure [Rust](https://www.rust-lang.org/) VNC server library for Windows. Share 
 * **Tile-Based Dirty Detection:** Only transmits changed screen regions to keep bandwidth low.
 * **Full Input Injection:** Mouse movement, left/middle/right clicks, 4-directional scroll, and keyboard events.
 * **View-Only Mode:** Serve your screen without allowing any remote input.
-* **Configurable FPS Cap:** Tune frame rate anywhere from 1 to 120 FPS.
+* **Configurable FPS Cap:** Tune frame rate anywhere from 1 to 240 FPS.
 * **Graceful Shutdown:** Stop the server programmatically via an `Arc<AtomicBool>` flag.
 * **Extensible Traits:** Plug in your own screen capture or input backend.
 * **Per-Session Stats:** FPS and bandwidth reported after each client disconnects.
 
-> **⚠️ Windows Only.** Screen capture and input injection rely on [`scrap`](https://crates.io/crates/scrap) and [`enigo`](https://crates.io/crates/enigo), which target Windows in this configuration.
+> **⚠️ Windows Only.** Screen capture and input injection rely on [`windows-capture`](https://crates.io/crates/windows-capture) and [`enigo`](https://crates.io/crates/enigo), which target Windows in this configuration.
 
 ## 🛠️ Prerequisites
 
@@ -43,7 +43,7 @@ Or add it manually to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-vncrs = "0.1.1"
+vncrs = "0.1.7"
 ```
 
 ### From source
@@ -60,7 +60,7 @@ cargo build --release
 
 ```rust
 use vncrs::{VncServer, VncServerConfig};
-use vncrs::capture::scrap::ScrapCapture;
+use vncrs::capture::windows::WindowsCapture;
 use vncrs::input::enigo_input::EnigoInput;
 
 fn main() -> vncrs::Result<()> {
@@ -70,7 +70,7 @@ fn main() -> vncrs::Result<()> {
         .name("My Desktop")
         .max_fps(30);
 
-    let capture = ScrapCapture::new()?;
+    let capture = WindowsCapture::new()?;
     let input = EnigoInput::new();
 
     let mut server = VncServer::new(capture, input, config);
@@ -136,7 +136,7 @@ cargo run --example full_server -- --port 5901 --password hunter2 --fps 30
 | `.port(u16)` | `5900` | TCP port to listen on |
 | `.password(&str)` | `None` | VNC password (truncated to 8 chars automatically) |
 | `.name(&str)` | `"Rust VNC"` | Desktop name shown to the client |
-| `.max_fps(u32)` | `60` | Frame rate cap (clamped to 1–120) |
+| `.max_fps(u32)` | `60` | Frame rate cap (clamped to 1–240) |
 | `.tile_size(usize)` | `64` | Dirty-check tile size in pixels (clamped to 16–256) |
 
 ```rust
@@ -176,7 +176,7 @@ vncrs
 ├── stats.rs            Per-session FPS / bandwidth counter
 ├── capture/
 │   ├── mod.rs          ScreenCapture trait
-│   └── scrap.rs        Windows implementation via `scrap`
+│   └── windows.rs      Windows implementation via `windows-capture`
 ├── input/
 │   ├── mod.rs          InputHandler trait + NoopInput
 │   ├── enigo_input.rs  Windows implementation via `enigo`
@@ -202,7 +202,10 @@ pub trait ScreenCapture {
     fn width(&self) -> u16;
     fn height(&self) -> u16;
     fn stride(&self) -> usize;
-    fn capture_frame(&mut self) -> Result<Option<Vec<u8>>>;
+
+    /// O(1) pointer swap — caller's old buffer is recycled.
+    /// Returns Ok(true) if buf now contains a new frame.
+    fn swap_frame(&mut self, buf: &mut Vec<u8>) -> Result<bool>;
 }
 ```
 
@@ -223,7 +226,7 @@ Use the built-in `NoopInput` for a view-only server without writing a custom imp
 
 | Crate | Purpose |
 |---|---|
-| [`scrap`](https://crates.io/crates/scrap) | Screen capture |
+| [`windows-capture`](https://crates.io/crates/windows-capture) | Modern, high-performance screen capture |
 | [`enigo`](https://crates.io/crates/enigo) | Mouse & keyboard injection |
 | [`flate2`](https://crates.io/crates/flate2) | Zlib compression |
 | [`des`](https://crates.io/crates/des) + [`cipher`](https://crates.io/crates/cipher) | DES for VNC challenge-response auth |

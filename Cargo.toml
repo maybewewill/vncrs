@@ -1,6 +1,6 @@
 [package]
 name = "vncrs"
-version = "0.1.6"
+version = "0.1.7"
 edition = "2021"
 description = "A pure Rust VNC server library for Windows"
 license = "MIT"
@@ -21,11 +21,31 @@ env_logger = "0.11"
 des = "0.8"
 cipher = "0.4"
 rand = "0.8"
+windows-capture = "2.0.0"
 scrap = "0.5.0"
+arc-swap = "1.7"
+socket2 = "0.5"
+rayon = "1.10"
+
 
 [dev-dependencies]
 ctrlc = "3.4"
 
 [profile.release]
 opt-level = 3
-lto = true
+lto = "fat"          # full cross-crate inlining of hot paths (row_differs, tile_changed, etc.)
+codegen-units = 1    # single unit => better optimization at the cost of longer builds
+panic = "abort"      # no unwinding tables; smaller binary + slight perf win
+strip = "symbols"    # smaller binary, no debug symbols in release
+
+# Faster incremental dev builds while still getting *some* optimization.
+# Use this for profiling / testing perf without waiting for a full release build.
+[profile.release-fast]
+inherits = "release"
+lto = "thin"
+codegen-units = 16
+
+# Dependencies are almost always well-optimized; compile them with O3 even
+# in dev so screen capture / compression aren't dog-slow during debug runs.
+[profile.dev.package."*"]
+opt-level = 3
